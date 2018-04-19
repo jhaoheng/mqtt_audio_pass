@@ -1,0 +1,38 @@
+version: "3.2"
+services:
+  emq:
+    image: jhaoheng/emq:v2.3.5
+    ports:
+      - 18083:18083/tcp # dashboard
+      - 1883:1883/tcp   # MQTT TCP port
+      - 8883:8883/tcp   # MQTT TCP TLS/SSL port
+      - 8083:8083/tcp   # HTTP and WebSocket port
+      - 8084:8084/tcp   # HTTPS and WSS port
+      - 8080:8080/tcp   # mgmt API port
+    container_name: emq
+    # domainname: 
+    # hostname: 
+    restart: always
+    # user: root
+    environment:
+      # configure : https://github.com/emqtt/emqttd/blob/master/etc/emq.conf
+      # - EMQ_HOST=127.0.0.1
+      # - EMQ_NAME=emq
+      - EMQ_WAIT_TIME=15
+      - EMQ_ADMIN_PASSWORD=admin
+      # - EMQ_LOG__CONSOLE=console
+      - EMQ_MQTT__MAX_PACKET_SIZE=64KB
+      - EMQ_MQTT__ALLOW_ANONYMOUS=true
+      # plugins
+      - EMQ_LOADED_PLUGINS="emq_recon, emq_modules, emq_retainer, emq_dashboard"
+
+  app:
+    build: .
+    image: audioPassByMqtt
+    container_name: audioPassByMqtt
+    ports:
+      - 80:80
+    volumes:
+      - ./app:/go/src/app
+    working_dir: /go/src/app
+    command: /usr/local/go/bin/go run ex-audioSub.go
